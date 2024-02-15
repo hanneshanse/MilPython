@@ -10,7 +10,7 @@ MilPython is still in an early state of development. For now it works for LP-Pro
 
 ## Installation
 The package is installed by
-*pip install milpython*
+*pip install milpython*.
 MilPython on [pypi](https://pypi.org/project/MilPython/).
 
 ## Getting started
