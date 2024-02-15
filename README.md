@@ -12,3 +12,7 @@ MilPython is still in an early state of development. For now it works for LP-Pro
 The package is installed by
 *pip install milpython*
 MilPython on [pypi](https://pypi.org/project/MilPython/).
+
+## Getting started
+This repository contains a basic axample showing the usage the framework.
+A more detailed maunal is in development.
