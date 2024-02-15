@@ -7,3 +7,8 @@ MilPython is still in an early state of development. For now it works for LP-Pro
 ## Roadmap
 - Translation into English
 - adding binary variables
+
+## Installation
+The package is installed by
+*pip install milpython*
+MilPython on [pypi](https://pypi.org/project/MilPython/).
