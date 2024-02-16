@@ -28,3 +28,5 @@ a = geb.bat.E_el_t.result
 # View results
 geb.bat.E_el_t.plot_result()
 plot_sum(geb.netz.P_el_bezug_t,geb.netz.P_el_abgabe_t)
+
+# %%

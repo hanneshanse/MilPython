@@ -30,9 +30,10 @@ class Gebaeude(LPObject,LPMain):
                         sense='E',
                         b=self.inputdata.data['strombedarf'][t])# Strombedarf im Gebäude
 
-    def def_zielfunktion(self):
+    def def_targetfun(self):
         '''Definiert die Zielfunktion der Optimierung'''
         for t in range(self.inputdata.steps):
-            self.add_var_zielfunktion(var=self.netz.P_el_bezug_t,
-                                    step=t,
-                                    value=self.inputdata.data['strompreis'][t])
+            self.add_var_targetfun(var=self.netz.P_el_bezug_t,
+                                   value=self.inputdata.data['strompreis'][t],
+                                   step=t
+                                   )
