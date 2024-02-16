@@ -7,26 +7,24 @@ from LPObjects import *
 # %%
 # Objekte anlegen
 steps=5
-inputdata = {'temp_a':np.zeros(steps), # Außentemperatur 0 Grad
-             'strompreis':-np.sin(np.linspace(0, 10*np.pi, steps)) + 1,  # strompreis: erstmal sinus, der um 1 oszilliert
-             'strombedarf':np.random.uniform(500, 500, steps),          # random Strombedarf
-             'waermebedarf':np.random.uniform(500,500,steps),           # random Heizwärmebedarf
-             'twwBedarf':np.random.uniform(500,500,steps),           # random TWW-Bedarf
+inputdata_dict = {'temp_a':np.zeros(steps), # Außentemperatur 0 Grad
+             'electricity_price':-np.sin(np.linspace(0, 10*np.pi, steps)) + 1,  # electricity price oscillates around 1
+             'electricity_demand':np.full(steps,500),                           # constant electricity demand
             }
-eingangsdaten = LPInputdata(data=inputdata,dt_h=10/60)
-geb = Gebaeude(eingangsdaten)
+inputdata = LPInputdata(data=inputdata_dict,dt_h=10/60)
+buil = Building(inputdata)
 
 # %%
 # Solve
-geb.optimize()
+buil.optimize()
 
 #%%
 # Use results
-a = geb.bat.E_el_t.result
+a = buil.bat.E.result
 
 # %%
 # View results
-geb.bat.E_el_t.plot_result()
-plot_sum(geb.netz.P_el_bezug_t,geb.netz.P_el_abgabe_t)
+buil.bat.E.plot_result()
+plot_sum(buil.netz.p_consumption,buil.netz.p_feed)
 
 # %%

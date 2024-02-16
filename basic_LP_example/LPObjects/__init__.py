@@ -1,3 +1,3 @@
-from .batteriespeicher import Batteriespeicher
-from .gebaeude import Gebaeude
-from .netzanschluss import Netzanschluss
+from .battery import Battery
+from .building import Building
+from .gridConnection import GridConnection
