@@ -1,12 +1,9 @@
 # MilPython
-MilPython is a python Framework for building milp-optimizations on time series using gurobipy
+MilPython is a python Framework for building milp-optimizations for time series using gurobipy
 
 ## MilPy is still under development
-MilPython is still in an early state of development. For now it works for LP-Problems only.
+If you come along issues or missing features please contact me at hannes.hanse@tu-clausthal.de
 
-## Roadmap
-- Translation into English
-- adding binary variables
 
 ## Installation
 The package is installed by
@@ -14,5 +11,5 @@ The package is installed by
 MilPython on [pypi](https://pypi.org/project/MilPython/).
 
 ## Getting started
-This repository contains a basic axample showing the usage the framework.
+This repository contains  basic examples showing the usage the framework.
 A more detailed maunal is in development.
