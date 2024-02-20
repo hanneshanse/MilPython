@@ -29,6 +29,6 @@ a = buil.bat.E.result
 # %%
 # View results
 buil.bat.E.plot_result()
-plot_sum(buil.netz.p_consumption,buil.netz.p_feed)
+plot_sum(buil.grid.p_consumption,buil.grid.p_feed)
 
 # %%

@@ -2,7 +2,7 @@
 This example extends the basic_LP_example by an additional variable (independent of time).
 In this case the add. variable is the max. capacity of the battery. 
 Battery capacity comes with a price.
-The total costs are getting optimized.
+The total costs for electricity and batery capacity are getting optimized.
 '''
 # %%
 # Imports
