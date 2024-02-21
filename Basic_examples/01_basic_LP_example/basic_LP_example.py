@@ -13,7 +13,7 @@ from LPObjects import *
 # %%
 # instanciating objects
 steps=5
-inputdata_dict = {'electricity_price':-np.sin(np.linspace(0, 10*np.pi, steps)) + 1,  # electricity price oscillates around 1
+inputdata_dict = {'electricity_price':-np.sin(np.linspace(0, 10*np.pi, steps)) + 2,  # electricity price oscillates around 1
                   'electricity_demand':np.full(steps,500)}                           # constant electricity demand
 inputdata = LPInputdata(data=inputdata_dict,dt_h=10/60)
 buil = Building(inputdata)

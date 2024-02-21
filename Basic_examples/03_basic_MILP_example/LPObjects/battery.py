@@ -13,6 +13,8 @@ class Battery(LPObject):
         # in this case: it must be charged or discharged with at least 100 watts
         self.p_discharge = self.add_time_var('P el entladen','W',lb=100,ub=self.p_discharge_max,vtype='S')
         self.p_charge = self.add_time_var('P el laden','W',lb=100,ub=self.p_charge_max,vtype='S') 
+        # self.p_discharge = self.add_time_var('P el entladen','W',ub=self.p_discharge_max)
+        # self.p_charge = self.add_time_var('P el laden','W',ub=self.p_charge_max) 
         
         self.E = self.add_time_var('E el t','Wh',ub=6000)
         

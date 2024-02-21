@@ -5,6 +5,7 @@ from .lpObject import LPObject
 from .lpStateVar import LPStateVar,LPStateVar_timedep,LPStateVar_add
 from .lpInputdata import LPInputdata
 from scipy.sparse import coo_matrix, csc_matrix, vstack
+from .tools import Solver,Obj
 
 class LPMain:
     '''
@@ -131,9 +132,16 @@ class LPMain:
         self.f[var.pos+step*len(self.stateVars_timedep)]=value
         
         
-    def optimize(self):
+    def optimize(self,mipGap=0.00,solver:Solver=Solver.GUROBI,objective:Obj=Obj.MINIMIZE):
         '''Performs the linear optimization of the system of equations set up'''
-        x=self.solver_gurobi()
+        if solver == Solver.GUROBI:
+            x=self.solver_gurobi(mipGap,objective)
+        elif solver == Solver.SCIPY:
+            x=self.solver_scipy(mipGap,objective)
+        elif solver == Solver.CPLEX:
+            x=self.solver_cplex(mipGap,objective)
+        else:
+            raise Exception('This Solver is not implemented')
         self.assign_results(x)
     
     def assign_results(self,x):
@@ -146,11 +154,13 @@ class LPMain:
             var.result = x[var.pos]
     
 # %% Funktion Solver
-    def solver_gurobi(self):
-        '''The solver_gurobi function transfers the optimization model to the Gurobi solver, performs the optimization and returns the result.
+    def solver_gurobi(self,mipGab,objective):
+        '''
+        The solver_gurobi function transfers the optimization model to the Gurobi solver, performs the optimization and returns the result.
         Aeq, beq, senses: Matrix or vector of equations with the comparison operator of each equation
         ctype, lb, ub: Type and upper and lower limits of the variables
-        f: target function'''
+        f: target function
+        '''
         # Transfer the optimization problem to the Gurobi API.
         # Create an empty problem
         problem = gp.Model()
@@ -158,11 +168,139 @@ class LPMain:
         x = problem.addMVar(shape=self.inputdata.num_vars,lb=self.lb,ub=self.ub,vtype=self.vtypes)
         # x = problem.addMVar(shape=self.inputdata.num_vars,lb=self.lb,ub=self.ub,vtype=['C' for _ in range(self.inputdata.num_vars)])
         # Pass target function
-        problem.setObjective(self.f @ x, gp.GRB.MINIMIZE)    
+        
+        if objective == Obj.MINIMIZE:
+            problem.setObjective(self.f @ x, gp.GRB.MINIMIZE)    
+        else:
+            problem.setObjective(self.f @ x, gp.GRB.MAXIMIZE)    
         # pass equations
         problem.addMConstr(self.Aeq.tocsr(), x, self.senses, self.beq)
         # optimize problem
-        problem.setParam('MIPGap', 0.00)  # Percentage distance to the optimum solution
+        problem.setParam('MIPGap', mipGab)  # Percentage distance to the optimum solution
         problem.optimize()
         x = x.X
+        return x
+    
+    def solver_scipy(self,mipGap,objective):
+        '''
+        The solver_scipy function transfers the optimization model to the scipy milp solver, performs the optimization and returns the result.
+        Note: This solver is free but very slow
+        
+        Aeq, beq, senses: Matrix or vector of equations with the comparison operator of each equation
+        ctype, lb, ub: Type and upper and lower limits of the variables
+        f: target function
+        '''
+        if objective == Obj.MINIMIZE:
+            pass   
+        else:
+            raise Exception('The scipy-Solver only allows minimizing')  
+        b_l=[]
+        b_u=[]
+        for idx,sense in enumerate(self.senses):
+            if sense == 'E' or sense == '=':
+                b_l.append(self.beq[idx])
+                b_u.append(self.beq[idx])
+            elif sense == '<':
+                b_l.append(-np.inf)
+                b_u.append(self.beq[idx])
+            elif sense == '>':
+                b_l.append(self.beq[idx])
+                b_u.append(np.inf)
+            else:
+                raise Exception(f'Unknown Sense {sense}')
+        # vtypes / integrality
+        integrality=[]
+        for idx,vtype in enumerate(self.vtypes):
+            if vtype == 'C':
+                integrality.append(0)
+            elif vtype == 'I':
+                integrality.append(1)
+            elif vtype == 'S':
+                integrality.append(2)
+            elif vtype == 'N':
+                integrality.append(3)#
+            elif vtype == 'B':#
+                integrality.append(1)
+                self.lb[idx]=0
+                self.ub[idx]=1
+            else:
+                print('unknown vtype')
+        from scipy.optimize import LinearConstraint
+        constraints = LinearConstraint(self.Aeq,b_l,b_u)
+        # %%
+        from scipy.optimize import milp
+        res = milp(c=self.f,constraints=constraints,integrality=integrality,options={'mip_rel_gap':mipGap})
+        return res.x
+
+    def solver_cplex(self,mipgap,objective):
+        '''
+        The solver_cplex() function transfers the optimization model to the cplex solver, performs the optimization and returns the result.
+        Aeq, beq, senses: Matrix or vector of equations with the comparison operator of each equation
+        ctype, lb, ub: Type and upper and lower limits of the variables
+        f: target function
+        '''
+        import cplex
+        # nbew empty problem
+        problem = cplex.Cplex()
+
+        # Adding variables
+        problem.variables.add(names=['x' + str(i) for i in range(self.inputdata.num_vars)])
+
+        # formatting the variable-type-list to fit cplex
+        types = [(i, problem.variables.type.continuous) if vtype_i == 'C' 
+                    else (i, problem.variables.type.binary) if vtype_i == 'B'
+                    else (i, problem.variables.type.semi_continuous) if vtype_i == 'S'
+                    else (i, problem.variables.type.semi_integer) if vtype_i == 'N'
+                    else (i, problem.variables.type.integer) for i, vtype_i in enumerate(self.vtypes)]
+        problem.variables.set_types(types)
+
+        # Setting lower and upper bounds
+        problem.variables.set_lower_bounds(list(enumerate(self.lb)))
+        problem.variables.set_upper_bounds(list(enumerate(self.ub)))
+
+        # set targetfunction
+        problem.objective.set_linear(list(enumerate(self.f)))
+        # set objective
+        if objective == Obj.MINIMIZE:
+            problem.objective.set_sense(problem.objective.sense.minimize)    
+        else:
+            problem.objective.set_sense(problem.objective.sense.maximize)    
+
+        # prepare equations
+        Aeq_rows = self.Aeq.row.tolist()
+        Aeq_cols = self.Aeq.col.tolist()
+        Aeq_vals = self.Aeq.data.tolist()
+        beq_rows = [i for i in range(len(self.beq))]
+        beq_vals = np.array(self.beq,dtype=float)
+
+        # cplex need var-names
+        problem.linear_constraints.add(names=['c' + str(i) for i in range(np.shape(self.Aeq)[0])])
+        # setting Aeq
+        problem.linear_constraints.set_coefficients(zip(Aeq_rows, Aeq_cols, Aeq_vals))
+        # setting beq
+        problem.linear_constraints.set_rhs(zip(beq_rows, beq_vals))
+
+        # preparing and setting senses
+        senses =[]
+        for sense in self.senses:
+            if sense == '<':
+                senses.append('L')
+            elif sense == '=':
+                senses.append('E')
+            elif sense == '>':
+                senses.append('G')
+            else:
+                senses.append(sense)
+        problem.linear_constraints.set_senses(list(enumerate(senses)))
+            
+        # setting mipgap
+        problem.parameters.mip.tolerances.mipgap.set(float(mipgap))
+
+        del Aeq_rows, Aeq_cols, Aeq_vals, beq_rows, beq_vals
+
+        # Solver
+        problem.solve()
+
+        # Returning result vector
+        x = np.array(problem.solution.get_values())
         return x
