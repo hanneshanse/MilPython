@@ -6,4 +6,4 @@ If you come along issues or missing features please contact me at hannes.hanse@t
 
 ## Original Sourcecode
 This is a copy of the original sourcecode of the milpython package that can be installed by "pip install milpython"
-This version is equivalent to MilPython 0.2.0 
+This version is equivalent to MilPython 0.4.2

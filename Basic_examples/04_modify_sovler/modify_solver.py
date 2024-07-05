@@ -22,6 +22,10 @@ inputdata = LPInputdata(data=inputdata_dict,dt_h=10/60)
 buil = Building(inputdata)
 
 # %%
+# Display the LP-system
+buil.show_lp_system()
+
+# %%
 # Use different solvers
 buil.optimize(solver=Solver.GUROBI) # Standard-Solver
 buil.optimize(solver=Solver.CPLEX) 
@@ -41,4 +45,9 @@ buil.optimize(mipGap=0.0001)
 # Changing the objective to maximizing the targetfunction
 # Note: maximizing is not supperted by the scipy-solver
 buil.optimize(objective=Obj.MAXIMIZE)
+
+# %%
+# Save results to Excel
+buil.results_to_excel('results.xlsx')
+
 # %%

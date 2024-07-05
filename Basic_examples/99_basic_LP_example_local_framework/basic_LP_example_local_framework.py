@@ -24,6 +24,10 @@ inputdata = LPInputdata(data=inputdata_dict,dt_h=10/60)
 buil = Building(inputdata)
 
 # %%
+# Display the LP-system
+buil.show_lp_system()
+
+# %%
 # Solve
 buil.optimize()
 
@@ -35,5 +39,9 @@ a = buil.bat.E.result
 # View results
 buil.bat.E.plot_result()
 plot_sum(buil.grid.p_consumption,buil.grid.p_feed)
+
+# %%
+# Save results to Excel
+buil.results_to_excel('results.xlsx')
 
 # %%

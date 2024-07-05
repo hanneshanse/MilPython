@@ -19,6 +19,10 @@ inputdata = LPInputdata(data=inputdata_dict,dt_h=10/60)
 buil = Building(inputdata,bat_price=10)
 
 # %%
+# Display the LP-system
+buil.show_lp_system()
+
+# %%
 # Solve
 buil.optimize()
 print(f'Lowest total cost with {buil.bat.E_max.result} Wh battery storage for 10 € / Wh')
@@ -29,4 +33,8 @@ buil2 = Building(inputdata,bat_price=1)
 buil2.optimize()
 print(f'Lowest total cost with {buil2.bat.E_max.result} Wh battery storage for 1 € / Wh')
 buil2.bat.E.plot_result()
+# %%
+# %%
+# Save results to Excel
+buil.results_to_excel('results.xlsx')
 # %%

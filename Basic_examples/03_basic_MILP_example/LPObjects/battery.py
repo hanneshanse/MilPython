@@ -11,15 +11,13 @@ class Battery(LPObject):
         
         # p_charge and p_discharge are now semi-continuous, so 0 and all values between lower bound (lb) and upper bound (ub) are allowed
         # in this case: it must be charged or discharged with at least 100 watts
-        self.p_discharge = self.add_time_var('P el entladen','W',lb=100,ub=self.p_discharge_max,vtype='S')
-        self.p_charge = self.add_time_var('P el laden','W',lb=100,ub=self.p_charge_max,vtype='S') 
-        # self.p_discharge = self.add_time_var('P el entladen','W',ub=self.p_discharge_max)
-        # self.p_charge = self.add_time_var('P el laden','W',ub=self.p_charge_max) 
+        self.p_discharge = self.add_time_var('P_bat_discharge','W',lb=100,ub=self.p_discharge_max,vtype='S')
+        self.p_charge = self.add_time_var('P_bat_charge','W',lb=100,ub=self.p_charge_max,vtype='S') 
         
-        self.E = self.add_time_var('E el t','Wh',ub=6000)
+        self.E = self.add_time_var('E_el','Wh',ub=6000)
         
         # Binary variable for switching between charging and discharging: Charging = 1; Discharging = 0
-        self.charge_switch = self.add_time_var('charging - discharging switch',vtype='B') 
+        self.charge_switch = self.add_time_var('switch_charge_discharge',vtype='B') 
         
     
     def def_equations(self):
@@ -30,7 +28,8 @@ class Battery(LPObject):
                              [self.p_charge,- self.inputdata.dt_h * self.eta_charge,0],
                              [self.p_discharge,self.inputdata.dt_h * self.eta_discharge,0]],
                     sense='E',
-                    b=0)
+                    b=0,
+                    description='Bat. Energy Balance - first timestep')
         # All further time steps
         for t in range(1,self.inputdata.steps):
             self.add_eq(var_lst=[[self.E,1,t],
@@ -38,12 +37,16 @@ class Battery(LPObject):
                                  [self.p_charge,- self.inputdata.dt_h * self.eta_charge,t],
                                  [self.p_discharge,self.inputdata.dt_h * self.eta_discharge,t]],
                         sense='E',
-                        b=0)
+                        b=0,
+                        description='Bat. energy balance')
             
             # Restriction that charging and discharging cannot take place at the same time using binary variable self.charge_switch 
+        for t in range(self.inputdata.steps):
             self.add_eq(var_lst=[[self.charge_switch,self.p_charge_max,t],
                                  [self.p_charge,-1,t]],
-                        sense='>',b=0)
+                        sense='>',b=0,
+                        description='Bat. no charging and discharging at the same time eq. 1')
             self.add_eq(var_lst=[[self.charge_switch,self.p_discharge_max,t],
                                  [self.p_discharge,1,t]],
-                        sense='<',b=self.p_discharge_max)
+                        sense='<',b=self.p_discharge_max,
+                        description='Bat. no charging and discharging at the same time eq. 2')
