@@ -45,5 +45,4 @@ class Building(LPObject,LPMain):
                                    value=self.inputdata.data['electricity_price'][t],
                                    step=t
                                    )
-        self.add_var_targetfun(var=self.bat.E_max,
-                                value=self.bat_price)
+        self.add_var_targetfun(var=self.bat.bat_choice.price,value=1)
