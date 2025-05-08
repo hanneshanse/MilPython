@@ -15,7 +15,6 @@ class Building(LPObject,LPMain):
         # The LPMain-Object must contain a list called self.obj_lst containing all LPObjects of the system (including itself)        
         self.bat = Battery(inputdata)
         self.grid = GridConnection(inputdata)
-        self.obj_lst:list[LPObject]=[self,self.bat,self.grid]
         
         self.bat_price = bat_price # battery price per Wh
         self.grid.p_feed.ub=0 # # No feed-back into the grid for now

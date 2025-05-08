@@ -7,6 +7,8 @@ The total electricity cost is getting optimized
 
 This version of example 01: "basic_LP_example" uses the local version of the MilPython-Framework found at src/MilPython
 Using a local version of the framework instead of using the package via "pip install milpython" can be usefull if a customization of the framework is necessary
+
+! The code in src may not be up to date with the latest version of the package !
 '''
 # %%
 # Imports

@@ -24,22 +24,26 @@ class Building(LPObject,LPMain):
     def def_equations(self):
         '''Defines the system of equations for the overall system'''
         # Electrical energy balance -> feed into building node is positive 
-        for t in range(self.inputdata.steps):
-            self.add_eq(var_lst=[[self.grid.p_feed,-1,t],               # Output of electrical power to higher-level grid
-                                 [self.grid.p_consumption,1,t],         # Power consumption from higher-level grid
-                                 [self.bat.p_charge,-1,t],              # Charging the battery storage
-                                 [self.bat.p_discharge,1,t],            # Discharging the battery storage
-                                 ],
-                        sense='E',
-                        b=self.inputdata.data['electricity_demand'][t]) # Electricity demand of the building
+        
+        #If an equation containing time dependent variables has to be defined or all time steps and each equation does not contain more than one time step, no iteration over the time steps is necessary.
+        # The syntax is then the same as for additional variables.
+        # The factor and right side of the equation may also be a list of values, which are then assigned to the respective time steps.
+        
+        self.add_eq(var_lst=[[self.grid.p_feed,-1],               # Output of electrical power to higher-level grid
+                                [self.grid.p_consumption,1],         # Power consumption from higher-level grid
+                                [self.bat.p_charge,-1],              # Charging the battery storage
+                                [self.bat.p_discharge,1],            # Discharging the battery storage
+                                ],
+                    sense='E',
+                    b=self.inputdata.data['electricity_demand']) # Electricity demand of the building
 
     def def_targetfun(self):
         '''
         Defines the targetfunction of the optimization
         This method must be defined in the class inheriting from LPMain
         '''
-        for t in range(self.inputdata.steps):
-            self.add_var_targetfun(var=self.grid.p_consumption,
-                                   value=self.inputdata.data['electricity_price'][t],
-                                   step=t
-                                   )
+        
+        # if the variable added to the target-function it can also be added without the time steps. The value can be a single value or a list of values.
+        # The time steps are then assigned automatically.
+        self.add_var_targetfun(var=self.grid.p_consumption,
+                                value=self.inputdata.data['electricity_price'])
